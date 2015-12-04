@@ -1,0 +1,13 @@
+Package: cstbox-ext-carlo_gavazzi
+Version: %(version)s
+Section: base
+Priority: optional
+Architecture: all
+Depends: cstbox-core, cstbox-ext-modbus
+Maintainer: Eric Pascual <eric.pascual@cstb.fr>
+Description: CSTBox Carlo Gavazzi Modbus products support
+    This package adds to an existing CSTBox framework the support
+    for Carlo Gavazzi  Modbus products.
+    .
+    Included products support:
+    - EM21 energy meter

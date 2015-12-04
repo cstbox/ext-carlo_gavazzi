@@ -1,0 +1,545 @@
+{
+    "productname" : "CGAVAZZI.EM21",
+    "__descr__" : {
+        "*" : "3-phased Energy Meter",
+        "fr" : "Compteur d'énergie triphasé"
+    },
+    "supports" : [],
+    "pdefs" : {
+        "root" : {
+            "__seq__" : ["address", "location", "enabled", "polling", "events_ttl"],
+            "polling" : {
+                "type" : "period",
+                "label" : {
+                    "fr" : "Période lecture",
+                    "*" : "Polling period"
+                },
+                "defvalue" : "1m"
+            },
+            "events_ttl" : {
+                "type" : "period",
+                "label" : {
+                    "fr" : "Validité des événements",
+                    "*" : "Events time to live"
+                },
+                "defvalue" : "2h"
+            }
+        },
+        "outputs" : {
+            "__seq__" : [
+                "V_L1_N", "V_L2_N", "V_L3_N", "V_L1_L2", "V_L2_L3", "V_L3_L1",
+                "A_L1", "A_L2", "A_L3",
+                "W_L1", "W_L2", "W_L3", "VA_L1", "VA_L2", "VA_L3", "VAR_L1", "VAR_L2", "VAR_L3",
+                "V_L_N_sys", "V_L_L_sys", "W_sys", "VA_sys", "VAR_sys",
+                "PF_L1", "PF_L2", "PF_L3", "PF_sys",
+                "F", "kWh_sys", "kVARh_sys"
+            ],
+            "V_L1_N" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Tension L1-Neutre",
+                    "*" : "L1-Neutral voltage"
+                },
+                "__vartype__" : "voltage",
+                "__varunits__" : "V",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "V_L2_N" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Tension L2-Neutre",
+                    "*" : "L2-Neutral voltage"
+                },
+                "__vartype__" : "voltage",
+                "__varunits__" : "V",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "V_L3_N" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Tension L3-Neutre",
+                    "*" : "L3-Neutral voltage"
+                },
+                "__vartype__" : "voltage",
+                "__varunits__" : "V",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "V_L1_L2" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Tension L1-L2",
+                    "*" : "L1-L2 voltage"
+                },
+                "__vartype__" : "voltage",
+                "__varunits__" : "V",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "V_L2_L3" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Tension L2-L3",
+                    "*" : "L2-L3 voltage"
+                },
+                "__vartype__" : "voltage",
+                "__varunits__" : "V",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "V_L3_L1" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Tension L3-L1",
+                    "*" : "L3-L1 voltage"
+                },
+                "__vartype__" : "voltage",
+                "__varunits__" : "V",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "A_L1" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Intensité L1",
+                    "*" : "L1 current"
+                },
+                "__vartype__" : "current",
+                "__varunits__" : "A",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "A_L2" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Intensité L2",
+                    "*" : "L2 current"
+                },
+                "__vartype__" : "current",
+                "__varunits__" : "A",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "A_L3" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Intensité L3",
+                    "*" : "L3 current"
+                },
+                "__vartype__" : "current",
+                "__varunits__" : "A",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "W_L1" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance L1",
+                    "*" : "L1 power"
+                },
+                "__vartype__" : "power",
+                "__varunits__" : "W",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "W_L2" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance L2",
+                    "*" : "L2 power"
+                },
+                "__vartype__" : "power",
+                "__varunits__" : "W",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "W_L3" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance L3",
+                    "*" : "L3 power"
+                },
+                "__vartype__" : "power",
+                "__varunits__" : "W",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "VA_L1" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance active L1",
+                    "*" : "L1 active power"
+                },
+                "__vartype__" : "power",
+                "__varunits__" : "VA",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "VA_L2" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance active L2",
+                    "*" : "L2 active power"
+                },
+                "__vartype__" : "power",
+                "__varunits__" : "VA",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "VA_L3" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance active L3",
+                    "*" : "L3 active power"
+                },
+                "__vartype__" : "power",
+                "__varunits__" : "VA",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "VAR_L1" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance réactive L1",
+                    "*" : "L1 reactive power"
+                },
+                "__vartype__" : "power.reactive",
+                "__varunits__" : "VAR",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "VAR_L2" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance réactive L2",
+                    "*" : "L2 reactive power"
+                },
+                "__vartype__" : "power.reactive",
+                "__varunits__" : "VAR",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "VAR_L3" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance réactive L3",
+                    "*" : "L3 reactive power"
+                },
+                "__vartype__" : "power.reactive",
+                "__varunits__" : "VAR",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "V_L_N_sys" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Tension Phase-Neutre système",
+                    "*" : "L-Neutral system voltage"
+                },
+                "__vartype__" : "voltage",
+                "__varunits__" : "V",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "V_L_L_sys" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Tension Phase-Phase système",
+                    "*" : "L-L system voltage"
+                },
+                "__vartype__" : "voltage",
+                "__varunits__" : "V",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "W_sys" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance totale",
+                    "*" : "Total power"
+                },
+                "__vartype__" : "power",
+                "__varunits__" : "W",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "VA_sys" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance active totale",
+                    "*" : "Total active power"
+                },
+                "__vartype__" : "power",
+                "__varunits__" : "VA",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "VAR_sys" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Puissance réactive totale",
+                    "*" : "Total reactive power"
+                },
+                "__vartype__" : "power.reactive",
+                "__varunits__" : "VAR",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 5
+                }
+            },
+            "PF_L1" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Facteur de puissance L1",
+                    "*" : "L1 power factor"
+                },
+                "__vartype__" : "power_factor",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 0.01
+                }
+            },
+            "PF_L2" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Facteur de puissance L2",
+                    "*" : "L2 power factor"
+                },
+                "__vartype__" : "power_factor",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 0.01
+                }
+            },
+            "PF_L3" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Facteur de puissance L3",
+                    "*" : "L3 power factor"
+                },
+                "__vartype__" : "power_factor",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 0.01
+                }
+            },
+            "PF_sys" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" : {
+                    "fr" : "Facteur de puissance global",
+                    "*" : "System power factor"
+                },
+                "__vartype__" : "power_factor",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 0.01
+                }
+            },
+            "F" : {
+                "__seq__" : ["enabled","delta_min"],
+                "__descr__" :  {
+                    "fr" : "Fréquence",
+                    "*" : "Frequency"
+                },
+                "__vartype__" : "frequency",
+                "__varunits__" : "Hz",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 0.5
+                }
+            },
+            "kWh_sys" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" :  {
+                    "fr" : "Energie active totale",
+                    "*" : "System active energy"
+                },
+                "__vartype__" : "energy",
+                "__varunits__" : "kWh",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            },
+            "kVARh_sys" : {
+                "__seq__" : ["enabled", "delta_min"],
+                "__descr__" :  {
+                    "fr" : "Energie réactive totale",
+                    "*" : "System reactive energy"
+                },
+                "__vartype__" : "energy.reactive",
+                "__varunits__" : "kVArh",
+                "delta_min" : {
+                    "type" : "float",
+                    "label" : {
+                        "fr" : "Variation minimale",
+                        "*" : "Variation threshold"
+                    },
+                    "defvalue" : 1
+                }
+            }
+        }
+    }
+}
