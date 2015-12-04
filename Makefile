@@ -6,7 +6,7 @@
 # author = Eric PASCUAL - CSTB (eric.pascual@cstb.fr)
 
 # name of the CSTBox module
-MODULE_NAME=ext-carlo_gavazzi
+MODULE_NAME=ext-carlogavazzi
 
 include $(CSTBOX_DEVEL_HOME)/lib/makefile-dist.mk
 
