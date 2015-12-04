@@ -12,3 +12,5 @@
 cstbox-*_all/
 deprecated/
 lib/python/pycstbox/__init__.py
+DEBIAN/control
+RELEASE-VERSION
