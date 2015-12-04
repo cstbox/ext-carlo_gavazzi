@@ -1,4 +1,4 @@
-Package: cstbox-ext-carlo_gavazzi
+Package: cstbox-ext-carlogavazzi
 Version: %(version)s
 Section: base
 Priority: optional
