@@ -76,6 +76,10 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
             return EM21Instrument.EM21_INT32Reg.decode(raw) / 10.
 
     class PowerFactorRegister(ModbusRegister):
+        def __new__(cls, addr, *args, **kwargs):
+            """ Overridden __new__ for fixing the register size. """
+            return ModbusRegister.__new__(cls, addr, size=2, signed=True, *args, **kwargs)
+
         @staticmethod
         def decode(raw):
             return raw / 1000.
@@ -127,7 +131,7 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
         """
         def __init__(self, *regs):
             self.regs = regs
-            self.unpack_format = '>' + ''.join(('h' if r.size == 1 else 'i' for r in regs))
+            self.unpack_format = '>' + ''.join(r.unpack_format for r in regs)
             self.size = reduce(lambda sztot, sz: sztot + sz, [r.size for r in regs])
 
     #: The register banks
