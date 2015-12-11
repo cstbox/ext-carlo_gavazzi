@@ -52,6 +52,10 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
     DEFAULT_BAUDRATE = 9600
 
     class EM21_INT32Reg(ModbusRegister):
+        def __new__(cls, addr, *args, **kwargs):
+            """ Overridden __new__ for fixing the register size. """
+            return ModbusRegister.__new__(cls, addr, size=2, *args, **kwargs)
+
         @staticmethod
         def decode(raw):
             return ((raw >> 16) & 0xffff) | ((raw << 16) & 0xffff)
@@ -86,36 +90,36 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
         def decode(raw):
             return EM21Instrument.EM21_INT32Reg.decode(raw) / 10.
 
-    V_L1_N = VoltageRegister(0x00, size=2)
-    V_L2_N = VoltageRegister(0x02, size=2)
-    V_L3_N = VoltageRegister(0x04, size=2)
-    V_L1_L2 = VoltageRegister(0x07, size=2)
-    V_L2_L3 = VoltageRegister(0x08, size=2)
-    V_L3_L1 = VoltageRegister(0x0A, size=2)
-    A_L1 = CurrentRegister(0x0C, size=2)
-    A_L2 = CurrentRegister(0x0E, size=2)
-    A_L3 = CurrentRegister(0x10, size=2)
-    W_L1 = PowerRegister(0x12, size=2)
-    W_L2 = PowerRegister(0x14, size=2)
-    W_L3 = PowerRegister(0x16, size=2)
-    VA_L1 = PowerRegister(0x18, size=2)
-    VA_L2 = PowerRegister(0x1A, size=2)
-    VA_L3 = PowerRegister(0x1C, size=2)
-    VAR_L1 = PowerRegister(0x1E, size=2)
-    VAR_L2 = PowerRegister(0x20, size=2)
-    VAR_L3 = PowerRegister(0x21, size=2)
-    V_L_N_SYS = VoltageRegister(0x24, size=2)
-    V_L_L_SYS = VoltageRegister(0x026, size=2)
-    W_SYS = PowerRegister(0x028, size=2)
-    VA_SYS = PowerRegister(0x02A, size=2)
-    VAR_SYS = PowerRegister(0x02C, size=2)
+    V_L1_N = VoltageRegister(0x00)
+    V_L2_N = VoltageRegister(0x02)
+    V_L3_N = VoltageRegister(0x04)
+    V_L1_L2 = VoltageRegister(0x07)
+    V_L2_L3 = VoltageRegister(0x08)
+    V_L3_L1 = VoltageRegister(0x0A)
+    A_L1 = CurrentRegister(0x0C)
+    A_L2 = CurrentRegister(0x0E)
+    A_L3 = CurrentRegister(0x10)
+    W_L1 = PowerRegister(0x12)
+    W_L2 = PowerRegister(0x14)
+    W_L3 = PowerRegister(0x16)
+    VA_L1 = PowerRegister(0x18)
+    VA_L2 = PowerRegister(0x1A)
+    VA_L3 = PowerRegister(0x1C)
+    VAR_L1 = PowerRegister(0x1E)
+    VAR_L2 = PowerRegister(0x20)
+    VAR_L3 = PowerRegister(0x21)
+    V_L_N_SYS = VoltageRegister(0x24)
+    V_L_L_SYS = VoltageRegister(0x026)
+    W_SYS = PowerRegister(0x028)
+    VA_SYS = PowerRegister(0x02A)
+    VAR_SYS = PowerRegister(0x02C)
     PF_L1 = PowerFactorRegister(0x02E)
     PF_L2 = PowerFactorRegister(0x02F)
     PF_L3 = PowerFactorRegister(0x030)
     PF_SYS = PowerFactorRegister(0x031)
     FREQ = FrequencyRegister(0x033)
-    KWH_SYS = EnergyRegister(0x034, size=2)
-    KVARH_SYS = EnergyRegister(0x036, size=2)
+    KWH_SYS = EnergyRegister(0x034)
+    KVARH_SYS = EnergyRegister(0x036)
 
     class RegisterBank(object):
         """ A register bank defines a group of registers which can be read in a single request,
@@ -164,7 +168,7 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
         "F", "kWh_sys", "kVARh_sys"
     ])
 
-    def __init__(self, port, unit_id, baudrate=DEFAULT_BAUDRATE, inter_requests_delay=0.5):
+    def __init__(self, port, unit_id, baudrate=DEFAULT_BAUDRATE, inter_requests_delay=0.1):
         """
         :param str port: serial port on which the RS485 interface is connected
         :param int unit_id: the address of the device
@@ -189,6 +193,9 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
 
         :rtype: OutputValues
         """
+        if self._logger.isEnabledFor(logging.DEBUG):
+            self._logger.debug("polling %s(%d)", self.__class__.__name__, self.unit_id)
+
         # read all the registers
         raw_values = []
         for i, bank in enumerate(self.BANKS):
