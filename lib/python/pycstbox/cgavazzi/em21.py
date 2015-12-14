@@ -172,18 +172,17 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
         "F", "kWh_sys", "kVARh_sys"
     ])
 
-    def __init__(self, port, unit_id, baudrate=DEFAULT_BAUDRATE, inter_requests_delay=0.1):
+    def __init__(self, port, unit_id, baudrate=DEFAULT_BAUDRATE):
         """
         :param str port: serial port on which the RS485 interface is connected
         :param int unit_id: the address of the device
         :param int baudrate: the serial communication baudrate
-        :param float inter_requests_delay: the delay between successive ModBus requests
         """
         super(EM21Instrument, self).__init__(port=port, slaveaddress=int(unit_id))
         self.serial.baudrate = baudrate
         self.serial.timeout = 0.5
         self._first_poll = True
-        self._inter_requests_delay = inter_requests_delay
+        self.poll_req_interval = 0
 
         Loggable.__init__(self, logname='em21-%03d' % self.address)
 
@@ -203,8 +202,11 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
         # read all the registers
         raw_values = []
         for i, bank in enumerate(self.BANKS):
-            if raw_values:
-                time.sleep(self._inter_requests_delay)
+            # if it is not the first request of the batch, and a pause between low level request must be done,
+            # wait a bit before going ahead
+            if self.poll_req_interval and raw_values:
+                time.sleep(self.poll_req_interval)
+
             if self._logger.isEnabledFor(logging.DEBUG):
                 self._logger.debug("reading bank #%d (addr=0x%04x reg_count=%d)", i, bank.regs[0].addr, bank.size)
             raw = struct.unpack(
