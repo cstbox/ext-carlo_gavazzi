@@ -205,6 +205,8 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
             # if it is not the first request of the batch, and a pause between low level request must be done,
             # wait a bit before going ahead
             if self.poll_req_interval and raw_values:
+                if self._logger.isEnabledFor(logging.DEBUG):
+                    self._logger.debug("pausing %d seconds between ModBus requests...", i, self.poll_req_interval)
                 time.sleep(self.poll_req_interval)
 
             if self._logger.isEnabledFor(logging.DEBUG):
