@@ -53,12 +53,17 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
 
     class EM21_INT32Reg(ModbusRegister):
         def __new__(cls, addr, *args, **kwargs):
-            """ Overridden __new__ for fixing the register size. """
-            return ModbusRegister.__new__(cls, addr, size=2, *args, **kwargs)
+            """ Overridden __new__ for fixing the register size and
+            forcing unsigned values since 2's complement is used here.
+            """
+            return ModbusRegister.__new__(cls, addr, size=2, signed=False, *args, **kwargs)
 
         @staticmethod
         def decode(raw):
-            return ((raw >> 16) & 0xffff) | ((raw << 16) & 0xffff)
+            # swap the words and apply the 2's complement if negative value
+            # BTW discard the signed since negative values have no real meaning
+            raw = ((raw >> 16) & 0xffff) | ((raw & 0xffff) << 16)
+            return abs(raw - 0x100000000) if raw & 0x80000000 else raw
 
     class VoltageRegister(EM21_INT32Reg):
         @staticmethod
@@ -78,16 +83,16 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
     class PowerFactorRegister(ModbusRegister):
         def __new__(cls, addr, *args, **kwargs):
             """ Overridden __new__ for fixing the register size. """
-            return ModbusRegister.__new__(cls, addr, size=2, signed=True, *args, **kwargs)
+            return ModbusRegister.__new__(cls, addr, *args, **kwargs)
 
         @staticmethod
         def decode(raw):
             return raw / 1000.
 
     class FrequencyRegister(ModbusRegister):
-        @staticmethod
-        def decode(raw):
-            return raw / 10.
+        def __new__(cls, addr, *args, **kwargs):
+            """ Overridden __new__ for fixing the register size. """
+            return ModbusRegister.__new__(cls, addr, *args, **kwargs)
 
     class EnergyRegister(EM21_INT32Reg):
         @staticmethod
@@ -127,35 +132,45 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
 
     class RegisterBank(object):
         """ A register bank defines a group of registers which can be read in a single request,
-        taking in account the EM21 limitation to 12 simple registers per access.
+        taking in account the EM21 limitation to 11 simple registers per access.
         """
         def __init__(self, *regs):
             self.regs = regs
             self.unpack_format = '>' + ''.join(r.unpack_format for r in regs)
             self.size = reduce(lambda sztot, sz: sztot + sz, [r.size for r in regs])
+            if self.size > 11:
+                raise ValueError('11 simple regs limit exceeded')
 
     #: The register banks
     BANKS = [
         RegisterBank(
-            V_L1_N, V_L2_N, V_L3_N,
-            V_L1_L2, V_L2_L3, V_L3_L1
+            V_L1_N, V_L2_N, V_L3_N, V_L1_L2, V_L2_L3
         ),
         RegisterBank(
-            A_L1, A_L2, A_L3, W_L1, W_L2, W_L3
+            V_L3_L1, A_L1, A_L2, A_L3, W_L1
         ),
         RegisterBank(
-            VA_L1, VA_L2, VA_L3, VAR_L1, VAR_L2, VAR_L3
+            W_L2, W_L3, VA_L1, VA_L2, VA_L3
         ),
         RegisterBank(
-            V_L_N_SYS, V_L_L_SYS, W_SYS, VA_SYS, VAR_SYS
+            VAR_L1, VAR_L2, VAR_L3, V_L_N_SYS, V_L_L_SYS
         ),
         RegisterBank(
-            PF_L1, PF_L2, PF_L3, PF_SYS, FREQ
+            W_SYS, VA_SYS, VAR_SYS,
         ),
         RegisterBank(
-            KWH_SYS, KVARH_SYS
+            PF_L1, PF_L2, PF_L3, PF_SYS
+        ),
+        # CAUTION : since we skip the phase sequence register, we need to start a new bank
+        # No doing this would include the Ph_seq in the data, thus shifting the content
+        # of the fields when decoding the packet
+        RegisterBank(
+            FREQ, KWH_SYS, KVARH_SYS
         )
     ]
+
+    BANKS_COUNT = len(BANKS)
+    LAST_BANK_NUM = BANKS_COUNT - 1
 
     #: the compiled sequence of banks registers
     ALL_REGS = reduce(lambda accum, v: accum + list(v.regs), BANKS, [])
@@ -179,10 +194,16 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
         :param int baudrate: the serial communication baudrate
         """
         super(EM21Instrument, self).__init__(port=port, slaveaddress=int(unit_id))
-        self.serial.baudrate = baudrate
-        self.serial.timeout = 0.5
+        self.serial.close()
+        self.serial.setBaudrate(baudrate)
+        self.serial.setTimeout(2)
+        self.serial.open()
+        self.serial.flush()
+
         self._first_poll = True
         self.poll_req_interval = 0
+        self.terminate = False
+        self.communication_error = False
 
         Loggable.__init__(self, logname='em21-%03d' % self.address)
 
@@ -202,22 +223,43 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
         # read all the registers
         raw_values = []
         for i, bank in enumerate(self.BANKS):
-            # if it is not the first request of the batch, and a pause between low level request must be done,
-            # wait a bit before going ahead
-            if self.poll_req_interval and raw_values:
-                if self._logger.isEnabledFor(logging.DEBUG):
-                    self._logger.debug("pausing %d seconds between ModBus requests...", i, self.poll_req_interval)
-                time.sleep(self.poll_req_interval)
+            if self.terminate:
+                return None
 
             if self._logger.isEnabledFor(logging.DEBUG):
                 self._logger.debug("reading bank #%d (addr=0x%04x reg_count=%d)", i, bank.regs[0].addr, bank.size)
-            raw = struct.unpack(
-                bank.unpack_format,
-                self.read_string(bank.regs[0].addr, bank.size)
-            )
+
+            # ensure no junk is lurking there
+            self.serial.flush()
+
+            try:
+                data = self.read_string(bank.regs[0].addr, bank.size)
+            except ValueError:
+                # CRC error is reported as ValueError
+                # => reset the serial link, wait a bit abd abandon this transaction
+                self.log_error('trying to recover from error')
+                self.serial.close()
+                time.sleep(self.poll_req_interval)
+                self.serial.open()
+                self.communication_error = True
+                return None
+
+            if self.communication_error:
+                self.log_info('recovered from error')
+                self.communication_error = False
+
+            raw = struct.unpack(bank.unpack_format, data)
             if self._logger.isEnabledFor(logging.DEBUG):
                 self._logger.debug("... raw: %s", ' '.join(hex(r) for r in raw))
             raw_values.extend(raw)
+
+            # if a pause between low level request must be done, wait a bit before going ahead
+            # (apart if this is the last request of the batch, since the ModBus controller
+            # does a pause between successive devices)
+            if i < self.LAST_BANK_NUM and self.poll_req_interval:
+                if self._logger.isEnabledFor(logging.DEBUG):
+                    self._logger.debug("pausing %.1fs between ModBus requests...", self.poll_req_interval)
+                time.sleep(self.poll_req_interval)
 
         # decode the raw values
         # (the raw values list is in the same sequences as the registers,
