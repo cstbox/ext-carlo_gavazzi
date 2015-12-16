@@ -29,27 +29,25 @@ Depends on Jonas Berg's minimalmodbus Python library :
     Version in date of writing: 0.4
 """
 
-import minimalmodbus
 import struct
 from collections import namedtuple
 import time
 import logging
 
-from pycstbox.modbus import ModbusRegister
-from pycstbox.log import Loggable
+from pycstbox.modbus import ModbusRegister, RTUModbusHWDevice
 
 __author__ = 'Eric PASCUAL - CSTB (eric.pascual@cstb.fr)'
 
 
-class EM21Instrument(minimalmodbus.Instrument, Loggable):
-    """ minimalmodbus.Instrument sub-class modeling the Carlo Gavazzi EM21
+class EM21Instrument(RTUModbusHWDevice):
+    """ RTUModbusHWDevice sub-class modeling the Carlo Gavazzi EM21
     3-phased energy meter.
 
     The supported model is the RTU RS485 one, the RS485 bus being connected
     via a USB.RS485 interface.
     """
 
-    DEFAULT_BAUDRATE = 9600
+    DEFAULT_BAUDRATE = 19200
 
     class EM21_INT32Reg(ModbusRegister):
         def __new__(cls, addr, *args, **kwargs):
@@ -193,24 +191,7 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
         :param int unit_id: the address of the device
         :param int baudrate: the serial communication baudrate
         """
-        super(EM21Instrument, self).__init__(port=port, slaveaddress=int(unit_id))
-        self.serial.close()
-        self.serial.setBaudrate(baudrate)
-        self.serial.setTimeout(2)
-        self.serial.open()
-        self.serial.flush()
-
-        self._first_poll = True
-        self.poll_req_interval = 0
-        self.terminate = False
-        self.communication_error = False
-
-        Loggable.__init__(self, logname='em21-%03d' % self.address)
-
-    @property
-    def unit_id(self):
-        """ The id of the device """
-        return self.address
+        super(EM21Instrument, self).__init__(port=port, unit_id=int(unit_id), baudrate=baudrate, logname='em21')
 
     def poll(self):
         """ Reads all the measurement registers and the values as a named tuple.
@@ -229,24 +210,10 @@ class EM21Instrument(minimalmodbus.Instrument, Loggable):
             if self._logger.isEnabledFor(logging.DEBUG):
                 self._logger.debug("reading bank #%d (addr=0x%04x reg_count=%d)", i, bank.regs[0].addr, bank.size)
 
-            # ensure no junk is lurking there
-            self.serial.flush()
-
-            try:
-                data = self.read_string(bank.regs[0].addr, bank.size)
-            except ValueError:
-                # CRC error is reported as ValueError
-                # => reset the serial link, wait a bit abd abandon this transaction
-                self.log_error('trying to recover from error')
-                self.serial.close()
-                time.sleep(self.poll_req_interval)
-                self.serial.open()
-                self.communication_error = True
+            data = self._read_registers(start_addr=bank.regs[0].addr, reg_count=bank.size)
+            if not data:
+                # if a communication error occurred, abandon the whole transaction
                 return None
-
-            if self.communication_error:
-                self.log_info('recovered from error')
-                self.communication_error = False
 
             raw = struct.unpack(bank.unpack_format, data)
             if self._logger.isEnabledFor(logging.DEBUG):
